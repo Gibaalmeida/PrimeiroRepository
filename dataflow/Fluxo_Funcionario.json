@@ -1,0 +1,160 @@
+{
+	"name": "Fluxo_Funcionario",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Funcionarios",
+						"type": "DatasetReference"
+					},
+					"name": "Funcionario"
+				},
+				{
+					"dataset": {
+						"referenceName": "Funcionarios",
+						"type": "DatasetReference"
+					},
+					"name": "Gestor"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Funcionarios",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				},
+				{
+					"dataset": {
+						"referenceName": "Funcionarios_tratados",
+						"type": "DatasetReference"
+					},
+					"name": "SalvarDados"
+				}
+			],
+			"transformations": [
+				{
+					"name": "OrdenarFuncionario"
+				},
+				{
+					"name": "OrdenarGestor"
+				},
+				{
+					"name": "JuncaoDados"
+				},
+				{
+					"name": "ColunasSelecionadas"
+				},
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          ID_FUNCIONARIO as integer,",
+				"          NOME_FUNCIONARIO as string,",
+				"          CPF as string,",
+				"          DATA_NASCIMENTO as date,",
+				"          {ENDEREÇO} as string,",
+				"          CIDADE as string,",
+				"          ESTADO as string,",
+				"          SALARIO as float 'R$ ###.##',",
+				"          CARGO as string,",
+				"          ID_GESTOR as integer,",
+				"          DATA_CONTRATACAO as string,",
+				"          DATA_DEMISSAO as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> Funcionario",
+				"source(output(",
+				"          ID_FUNCIONARIO as integer,",
+				"          NOME_FUNCIONARIO as string,",
+				"          CPF as string,",
+				"          DATA_NASCIMENTO as date,",
+				"          {ENDEREÇO} as string,",
+				"          CIDADE as string,",
+				"          ESTADO as string,",
+				"          SALARIO as float 'R$ ###.##',",
+				"          CARGO as string,",
+				"          ID_GESTOR as integer,",
+				"          DATA_CONTRATACAO as string,",
+				"          DATA_DEMISSAO as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> Gestor",
+				"Funcionario sort(asc(ID_GESTOR, true)) ~> OrdenarFuncionario",
+				"Gestor sort(asc(ID_FUNCIONARIO, true)) ~> OrdenarGestor",
+				"OrdenarFuncionario, OrdenarGestor join(Funcionario@ID_GESTOR == Gestor@ID_FUNCIONARIO,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> JuncaoDados",
+				"JuncaoDados select(mapColumn(",
+				"          ID_FUNCIONARIO = Funcionario@ID_FUNCIONARIO,",
+				"          NOME_FUNCIONARIO = Funcionario@NOME_FUNCIONARIO,",
+				"          CPF = Funcionario@CPF,",
+				"          DATA_NASCIMENTO = Funcionario@DATA_NASCIMENTO,",
+				"          {ENDEREÇO} = Funcionario@{ENDEREÇO},",
+				"          CIDADE = Funcionario@CIDADE,",
+				"          ESTADO = Funcionario@ESTADO,",
+				"          SALARIO = Funcionario@SALARIO,",
+				"          CARGO = Funcionario@CARGO,",
+				"          ID_GESTOR = Funcionario@ID_GESTOR,",
+				"          DATA_CONTRATACAO = Funcionario@DATA_CONTRATACAO,",
+				"          DATA_DEMISSAO = Funcionario@DATA_DEMISSAO,",
+				"          ID_FUNCIONARIO = Gestor@ID_FUNCIONARIO,",
+				"          {Nome Gestor} = Gestor@NOME_FUNCIONARIO,",
+				"          CPF = Gestor@CPF,",
+				"          DATA_NASCIMENTO = Gestor@DATA_NASCIMENTO,",
+				"          {ENDEREÇO} = Gestor@{ENDEREÇO},",
+				"          CIDADE = Gestor@CIDADE,",
+				"          ESTADO = Gestor@ESTADO,",
+				"          SALARIO = Gestor@SALARIO,",
+				"          CARGO = Gestor@CARGO,",
+				"          ID_GESTOR = Gestor@ID_GESTOR,",
+				"          DATA_CONTRATACAO = Gestor@DATA_CONTRATACAO,",
+				"          DATA_DEMISSAO = Gestor@DATA_DEMISSAO",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> ColunasSelecionadas",
+				"ColunasSelecionadas derive(CIDADE = trim(substring(substringIndex(substringIndex({ENDEREÇO}, ', ', -1), ' /', 1), locate(' ', substringIndex(substringIndex({ENDEREÇO}, ', ', -1), ' /', 1)))),",
+				"          ESTADO = right({ENDEREÇO}, 2)) ~> derivedColumn1",
+				"Funcionario sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          ID_FUNCIONARIO as string,",
+				"          NOME_FUNCIONARIO as string,",
+				"          CPF as string,",
+				"          DATA_NASCIMENTO as string,",
+				"          {ENDEREÇO} as string,",
+				"          CIDADE as string,",
+				"          ESTADO as string,",
+				"          SALARIO as string,",
+				"          CARGO as string,",
+				"          ID_GESTOR as string,",
+				"          DATA_CONTRATACAO as string,",
+				"          DATA_DEMISSAO as string",
+				"     ),",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     partitionFileNames:['Funcionarios_tratados.csv'],",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> SalvarDados"
+			]
+		}
+	}
+}

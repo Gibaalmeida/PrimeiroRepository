@@ -1,0 +1,73 @@
+{
+	"name": "Funcionarios",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Conexao_DataLake",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "raw/Funcionarios",
+				"fileSystem": "datalake-aulas"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "ID_FUNCIONARIO",
+				"type": "String"
+			},
+			{
+				"name": "NOME_FUNCIONARIO",
+				"type": "String"
+			},
+			{
+				"name": "CPF",
+				"type": "String"
+			},
+			{
+				"name": "DATA_NASCIMENTO",
+				"type": "String"
+			},
+			{
+				"name": "ENDEREÇO",
+				"type": "String"
+			},
+			{
+				"name": "CIDADE",
+				"type": "String"
+			},
+			{
+				"name": "ESTADO",
+				"type": "String"
+			},
+			{
+				"name": "SALARIO",
+				"type": "String"
+			},
+			{
+				"name": "CARGO",
+				"type": "String"
+			},
+			{
+				"name": "ID_GESTOR",
+				"type": "String"
+			},
+			{
+				"name": "DATA_CONTRATACAO",
+				"type": "String"
+			},
+			{
+				"name": "DATA_DEMISSAO",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
